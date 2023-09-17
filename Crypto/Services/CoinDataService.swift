@@ -25,10 +25,10 @@ class CoinDataService{
             return
         }
         //持续监听，通过coinSubscription访问
-        coinSubscription = NetworkingManager.instance.download(url:url)//网络层工具下载
+        coinSubscription = NetworkingManager.download(url:url)//网络层工具下载
             .decode(type: [CoinModel].self, decoder: JSONDecoder())
             .sink(
-                receiveCompletion: NetworkingManager.instance.handleCompletion,
+                receiveCompletion: NetworkingManager.handleCompletion,
                 receiveValue: {[weak self] (returnCoins) in
                 self?.allCoins = returnCoins
                 self?.coinSubscription?.cancel()//当前请求是可知的只会传递一次结果，所以可以直接取消
