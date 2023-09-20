@@ -28,15 +28,15 @@ class NetworkingManager{
     private init(){
         
     }
-    
+    //可重用下载方法
     static func download(url:URL) -> AnyPublisher<Data,Error> {
        return URLSession.shared.dataTaskPublisher(for: url)
             .subscribe(on:DispatchQueue.global(qos: .default))
-            .tryMap({try handleURLResponse(output: $0,url: url)})
-            .receive(on: DispatchQueue.main)
+            .tryMap({try handleURLResponse(output: $0,url: url)})//处理错误信息
+            .receive(on: DispatchQueue.main)//指定接收线程
             .eraseToAnyPublisher()//抹除具体的Publisher类型
     }
-    
+    //与下载方法解耦
     static func handleURLResponse(output:URLSession.DataTaskPublisher.Output,url:URL) throws -> Data {
         guard
             let reponse = output.response as? HTTPURLResponse,
@@ -46,7 +46,7 @@ class NetworkingManager{
             }
         return output.data
     }
-    
+    //处理成功或者失败操作
     static func handleCompletion(completion:Subscribers.Completion<Error>){
         switch completion {
         case .finished:
