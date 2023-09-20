@@ -29,7 +29,7 @@ struct HomeView: View {
                         .transition(.move(edge: .leading))//设置动画
                 }
                 
-                if  showPortfolio{
+                if showPortfolio{
                     portfolioCoinList
                         .transition(.move(edge: .trailing))//设置动画
                 }
