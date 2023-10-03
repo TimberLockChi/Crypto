@@ -9,7 +9,7 @@ import SwiftUI
 
 struct HomeView: View {
     
-    @EnvironmentObject private var vm: HomeViewModel
+    @EnvironmentObject private var vm: HomeViewModel//拿到总的vm
     
     @State private var showPortfolio: Bool = false//尽可能的使用private
     
@@ -20,10 +20,17 @@ struct HomeView: View {
                 .ignoresSafeArea()
             //content layer
             VStack{
+                //头部标题栏
                 homeHeader//放到extension部分
+                //统计信息列表
                 
+                HomeStatsView(showPortfolio: $showPortfolio, statistics: vm.statistics)
+                
+                //搜搜栏
+                SearchBarView(searchText: $vm.searchText)
+                //栏标题
                 columTitles
-                
+                //主列表
                 if !showPortfolio{
                     allCoinList
                         .transition(.move(edge: .leading))//设置动画
