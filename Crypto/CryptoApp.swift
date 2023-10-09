@@ -10,7 +10,13 @@ import SwiftUI
 @main
 struct CryptoApp: App {
     
-    @StateObject var vm = HomeViewModel()
+    @StateObject var vm = HomeViewModel()//总数据管理模型
+    
+    init(){
+        //便更导航栏系统默认颜色
+        UINavigationBar.appearance().largeTitleTextAttributes = [.foregroundColor:UIColor(Color.theme.accent)]
+        UINavigationBar.appearance().titleTextAttributes = [.foregroundColor:UIColor(Color.theme.accent)]
+    }
     
     var body: some Scene {
         WindowGroup {

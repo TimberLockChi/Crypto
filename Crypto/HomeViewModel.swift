@@ -23,6 +23,7 @@ class HomeViewModel: ObservableObject{
     
     private let coinDataService = CoinDataService()
     private let marketDataService = MarketDataService()
+    private let portfolioDataService = PortfolioDataService()
     private var cancellable = Set<AnyCancellable>()
     
     init(){
@@ -37,9 +38,10 @@ class HomeViewModel: ObservableObject{
             .map(filterCoins)
             .sink {[weak self] returnedCoins in
                 self?.allCoins = returnedCoins
-                self?.portfolioCoins = returnedCoins
+                //self?.portfolioCoins = returnedCoins
             }
             .store(in: &cancellable)
+        
         //更新时长数据
         marketDataService.$marketData
             .map(mapGlobalMarketData)
@@ -47,6 +49,26 @@ class HomeViewModel: ObservableObject{
                 self?.statistics = returnedStats
             }
             .store(in: &cancellable)
+        
+        //更新拥有的货币信息
+        $allCoins
+            .combineLatest(portfolioDataService.$savedEntities)//伴随所有货币列表进行更新
+            .map { (coinModels,portfolioEntities) -> [CoinModel] in
+                coinModels.compactMap { coin -> CoinModel? in
+                    guard let entity = portfolioEntities.first(where:{$0.coinID == coin.id}) else{
+                        return nil
+                    }
+                    return coin.updateHoldings(amount: entity.amount)
+                }
+            }
+            .sink { [weak self] returnedCoins in
+                self?.portfolioCoins = returnedCoins
+            }
+            .store(in: &cancellable)
+    }
+    
+    func updatePortfolio(coin: CoinModel, amount: Double){
+        portfolioDataService.updatePortfolio(coin: coin, amount: amount)
     }
     
     

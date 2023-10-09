@@ -13,11 +13,18 @@ struct HomeView: View {
     
     @State private var showPortfolio: Bool = false//尽可能的使用private
     
+    @State private var showPortfolioView: Bool = false // 新列表
+    
     var body: some View {
         ZStack{
             //background layer
             Color.theme.background
                 .ignoresSafeArea()
+                .sheet(isPresented: $showPortfolioView, content: {
+                    //底部弹出页面
+                    PortfolioView()
+                        .environmentObject(vm)//会产生新的环境，需要将环境变量手动添加到view中
+                })
             //content layer
             VStack{
                 //头部标题栏
@@ -62,6 +69,11 @@ extension HomeView{
         HStack{
             CircleButtonView(iconName: showPortfolio ? "plus" : "info")//按钮视图
                 .animation(.none, value: showPortfolio)//根据特定值的变化设置动画效果，.none表示取消动画
+                .onTapGesture {
+                    if showPortfolio{
+                        showPortfolioView.toggle()//显示showPortfolioView
+                    }
+                }
                 .background(
                     CircleButtonAnimationView(animate: $showPortfolio)//设置背景，实现自定义动画效果
                 )
