@@ -124,6 +124,15 @@ extension HomeView{
             }
             Text("Price")
                 .frame(width: UIScreen.main.bounds.width/3.5,alignment: .trailing)
+            
+            Button {
+                withAnimation(Animation.linear(duration: 2)) {
+                    vm.reloadData()
+                }
+            } label: {
+                Image(systemName: "goforward")
+            }
+            .rotationEffect(Angle(degrees: vm.isLoading ? 360:0),anchor: .center)//绕中心旋转360度
         }
         .font(.caption)
         .foregroundColor(Color.theme.secondaryText)
