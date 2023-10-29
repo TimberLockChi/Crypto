@@ -23,6 +23,7 @@ struct CoinRowView: View {
             rightColum
         }
         .font(.headline)
+        .contentShape(Rectangle())//使得长方形区域可以点击
     }
 }
 

@@ -45,7 +45,6 @@ class HomeViewModel: ObservableObject{
             .map(filterAndSortCoins)
             .sink {[weak self] returnedCoins in
                 self?.allCoins = returnedCoins
-                //self?.portfolioCoins = returnedCoins
             }
             .store(in: &cancellable)
         
@@ -53,9 +52,10 @@ class HomeViewModel: ObservableObject{
         $allCoins
             .combineLatest(portfolioDataService.$savedEntities)//伴随所有货币列表进行更新
             .map (mapAllCoinsToPortfolioCoins)
-            .sink { [weak self] returnedCoins in
+            .sink {[weak self] returnedCoins in
                 //来自接收器的值是不可变的
-                self?.portfolioCoins = returnedCoins
+                guard let self = self else {return}
+                self.portfolioCoins = self.sortPortfolioCoinsIfNeeded(coins: returnedCoins)
             }
             .store(in: &cancellable)
         
@@ -81,6 +81,18 @@ class HomeViewModel: ObservableObject{
     func updatePortfolio(coin: CoinModel, amount: Double){
         portfolioDataService.updatePortfolio(coin: coin, amount: amount)
     }
+    
+    private func sortPortfolioCoinsIfNeeded(coins:[CoinModel])->[CoinModel]{
+        switch sortOption {
+        case .holdings:
+            return coins.sorted(by: {$0.currentHodingsValues > $1.currentHodingsValues})
+        case .holdingReversed:
+            return coins.sorted(by: {$0.currentHodingsValues < $1.currentHodingsValues})
+        default:
+            return coins
+        }
+    }
+    
     
     private func mapAllCoinsToPortfolioCoins(allCoins:[CoinModel],portfolioCoins:[PortfolioEntity])->[CoinModel]{
         allCoins.compactMap { coin -> CoinModel? in
@@ -126,10 +138,6 @@ class HomeViewModel: ObservableObject{
         case.priceReversed:
              coins.sort(by: {$0.currentPrice < $1.currentPrice})
         }
-    }
-    
-    private func sortPortfolioIfNeeded(coins:[CoinModel])->[CoinModel]{
-    
     }
     
     private func mapGlobalMarketData(marketDataModel:MarketDataModel?,portfolioCoins:[CoinModel]) -> [StatisticModel]{

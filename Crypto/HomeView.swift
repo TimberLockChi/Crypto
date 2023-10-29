@@ -15,6 +15,9 @@ struct HomeView: View {
     
     @State private var showPortfolioView: Bool = false // 新列表
     
+    @State private var selectCoin:CoinModel? = nil
+    @State private var showDetailView:Bool = false
+    
     var body: some View {
         ZStack{
             //background layer
@@ -51,6 +54,15 @@ struct HomeView: View {
                 Spacer(minLength: 0)
             }
         }
+        .background(
+            //防止在列表生成时加载所有第二页面
+            NavigationLink(
+                destination:  DetailLoadingView(coin: $selectCoin),
+                isActive: $showDetailView,
+                label: {
+                    EmptyView()
+                })
+        )
     }
 }
 
@@ -100,6 +112,18 @@ extension HomeView{
             ForEach(vm.allCoins){ coin in
                 CoinRowView(coin: coin, showHoldingsColum: false)
                     .listRowInsets(.init(top: 10, leading: 0, bottom: 10, trailing: 10))//设置列表间隔位置
+                    .onTapGesture {
+                        segue(coin: coin)
+                    }
+                    
+                    
+//                NavigationLink {
+//                    //会在列表显示后进行加载，会导致性能降低
+//                    DetailView(coin: coin)
+//                } label: {
+//                    CoinRowView(coin: coin, showHoldingsColum: false)
+//                        .listRowInsets(.init(top: 10, leading: 0, bottom: 10, trailing: 10))//设置列表间隔位置
+//                }
             }
         }
         .listStyle(PlainListStyle())
@@ -110,20 +134,60 @@ extension HomeView{
             ForEach(vm.portfolioCoins){ coin in
                 CoinRowView(coin: coin, showHoldingsColum: true)//是否显示中间的持有部分
                     .listRowInsets(.init(top: 10, leading: 0, bottom: 10, trailing: 10))//设置列表间隔位置
+                    .onTapGesture {
+                        segue(coin: coin)
+                    }
             }
         }
         .listStyle(PlainListStyle())
     }
     
+    private func segue(coin:CoinModel){
+        selectCoin = coin
+        showDetailView.toggle()
+    }
+    
     private var columTitles:some View{
         HStack{
-            Text("Coin")
+            HStack(spacing:4){
+                Text("Coin")
+                Image(systemName: "chevron.down")
+                    .opacity((vm.sortOption == .rank || vm.sortOption == .rankReversed) ? 1.0 : 0.0)
+                    .rotationEffect(Angle(degrees: vm.sortOption == .rank ? 0 : 180))
+            }
+            .onTapGesture {
+                withAnimation {
+                    vm.sortOption = vm.sortOption == .rank ? .rankReversed : .rank
+                }
+                
+            }
+            
             Spacer()
             if showPortfolio {
-                Text("Holding")
+                HStack(spacing:4){
+                    Text("Holding")
+                    Image(systemName: "chevron.down")
+                        .opacity((vm.sortOption == .holdings || vm.sortOption == .holdingReversed) ? 1.0 : 0.0)
+                        .rotationEffect(Angle(degrees: vm.sortOption == .holdings ? 0 : 180))
+                }
+                .onTapGesture {
+                    withAnimation{
+                        vm.sortOption = vm.sortOption == .holdings ? .holdingReversed : .holdings
+                    }
+                }
             }
-            Text("Price")
-                .frame(width: UIScreen.main.bounds.width/3.5,alignment: .trailing)
+            HStack(spacing:4){
+                Text("Price")
+                Image(systemName: "chevron.down")
+                    .opacity((vm.sortOption == .price || vm.sortOption == .priceReversed) ? 1.0 : 0.0)
+                    .rotationEffect(Angle(degrees: vm.sortOption == .price ? 0 : 180))
+            }
+            .frame(width: UIScreen.main.bounds.width/3.5,alignment: .trailing)
+            .onTapGesture {
+                withAnimation{
+                    vm.sortOption = vm.sortOption == .price ? .priceReversed : .price
+                }
+            }
             
             Button {
                 withAnimation(Animation.linear(duration: 2)) {
